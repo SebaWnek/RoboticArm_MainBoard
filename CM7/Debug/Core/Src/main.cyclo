@@ -1,0 +1,13 @@
+../Core/Src/main.c:104:13:MPU_Config	1
+../Core/Src/main.c:133:5:main	11
+../Core/Src/main.c:249:6:SystemClock_Config	4
+../Core/Src/main.c:317:13:MX_ETH_Init	2
+../Core/Src/main.c:366:13:MX_RTC_Init	4
+../Core/Src/main.c:430:13:MX_UART4_Init	5
+../Core/Src/main.c:478:6:MX_USART3_UART_Init	5
+../Core/Src/main.c:524:13:MX_DMA_Init	1
+../Core/Src/main.c:542:13:MX_GPIO_Init	1
+../Core/Src/main.c:620:13:SystemClock_Reconfigure	6
+../Core/Src/main.c:672:5:_write	1
+../Core/Src/main.c:690:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Src/main.c:708:6:Error_Handler	1
