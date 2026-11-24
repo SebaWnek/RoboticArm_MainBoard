@@ -15,6 +15,10 @@
   *
   ******************************************************************************
   */
+
+	// Change clock after CubeMX rebuild to:
+	// HAL_PWREx_ConfigSupply(PWR_DIRECT_SMPS_SUPPLY);
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "app_threadx.h"
@@ -93,7 +97,7 @@ static void MX_ETH_Init(void);
 static void MX_UART4_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-static void SystemClock_Reconfigure(void);
+
 static void MPU_Config(void);
 
 /* USER CODE END PFP */
@@ -134,7 +138,8 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  /* Configure Ethernet DMA memory as non-cacheable before enabling D-cache. */
+  MPU_Config();
   /* USER CODE END 1 */
 /* USER CODE BEGIN Boot_Mode_Sequence_0 */
 #if defined(DUAL_CORE_BOOT_SYNC_SEQUENCE)
@@ -143,9 +148,6 @@ int main(void)
 /* USER CODE END Boot_Mode_Sequence_0 */
 
   /* Enable the CPU Cache */
-
-  /* Ethernet DMA descriptors and NetX packet storage must be non-cacheable. */
-  MPU_Config();
 
   /* Enable I-Cache---------------------------------------------------------*/
   SCB_EnableICache();
@@ -176,7 +178,6 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 /* USER CODE BEGIN Boot_Mode_Sequence_2 */
-SystemClock_Reconfigure();
 #if defined(DUAL_CORE_BOOT_SYNC_SEQUENCE)
 /* When system initialization is finished, Cortex-M7 will release Cortex-M4 by means of
 HSEM notification */
@@ -257,7 +258,7 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
   while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
@@ -269,19 +270,16 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE
-                              |RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 1;
   RCC_OscInitStruct.PLL.PLLN = 60;
   RCC_OscInitStruct.PLL.PLLP = 1;
-  RCC_OscInitStruct.PLL.PLLQ = 10;
-  RCC_OscInitStruct.PLL.PLLR = 4;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
   RCC_OscInitStruct.PLL.PLLFRACN = 0;
@@ -295,7 +293,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
@@ -303,7 +301,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -617,56 +615,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* Reproduce the reported direct-SMPS/VOS0/480 MHz startup experiment. */
-static void SystemClock_Reconfigure(void)
-{
-  RCC_OscInitTypeDef osc_config = {0};
-  RCC_ClkInitTypeDef clk_config = {0};
-  uint32_t flash_latency = 0;
 
-  /*
-   * PWR_CR3 supply selection was made by SystemClock_Config().  Confirm that
-   * the selected supply is still direct SMPS; do not issue a second supply
-   * configuration request here.
-   */
-  if (HAL_PWREx_GetSupplyConfig() != PWR_DIRECT_SMPS_SUPPLY)
-  {
-    Error_Handler();
-  }
-
-  /* The safe startup config leaves SYSCLK on HSI, so PLL1 can be changed. */
-  __HAL_RCC_SYSCFG_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  while (__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY) == RESET)
-  {
-  }
-
-  /*
-   * Deliberately request VOS0/overdrive while retaining direct SMPS. This
-   * mirrors the reported experiment; it does not switch the supply to LDO.
-   */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
-  while (__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY) == RESET)
-  {
-  }
-
-  /* Restore the final PLL1 Q and R dividers from the CubeMX-safe values. */
-  HAL_RCC_GetOscConfig(&osc_config);
-  osc_config.PLL.PLLP = 1;
-  osc_config.PLL.PLLQ = 4;
-  osc_config.PLL.PLLR = 2;
-  if (HAL_RCC_OscConfig(&osc_config) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Select PLL1P as SYSCLK, preserving CubeMX's bus prescalers. */
-  HAL_RCC_GetClockConfig(&clk_config, &flash_latency);
-  clk_config.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  if (HAL_RCC_ClockConfig(&clk_config, FLASH_LATENCY_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
 
 // Override the default _write function to use UART for printf output
 int _write(int file, char *ptr, int len)

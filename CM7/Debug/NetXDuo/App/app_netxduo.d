@@ -8,7 +8,11 @@ NetXDuo/App/app_netxduo.o: ../NetXDuo/App/app_netxduo.c \
  ../../Middlewares/ST/threadx/common/inc/tx_trace.h \
  ../../Middlewares/ST/netxduo/common/drivers/ethernet/nx_stm32_eth_driver.h \
  ../../Middlewares/ST/netxduo/common/inc/nx_link.h \
- ../../Middlewares/ST/netxduo/common/inc/nx_api.h ../Core/Inc/main.h \
+ ../../Middlewares/ST/netxduo/common/inc/nx_api.h \
+ ../../Middlewares/ST/netxduo/addons/dhcp/nxd_dhcp_client.h \
+ ../../Middlewares/ST/netxduo/common/inc/nx_udp.h \
+ ../../Middlewares/ST/netxduo/common/inc/nx_ip.h \
+ ../../Middlewares/ST/netxduo/common/inc/nx_ipv4.h ../Core/Inc/main.h \
  ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  ../Core/Inc/stm32h7xx_hal_conf.h \
  ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h \
@@ -50,10 +54,7 @@ NetXDuo/App/app_netxduo.o: ../NetXDuo/App/app_netxduo.c \
  ../Core/Inc/stm32h7xx_nucleo_conf.h \
  ../../Drivers/BSP/STM32H7xx_Nucleo/stm32h7xx_nucleo_errno.h \
  C:/Users/sebaw/OneDrive/Robotic\ arm/Software/H7/MainBoard/Shared/Inc/helpers.h \
- ../../Middlewares/ST/netxduo/addons/dhcp/nxd_dhcp_client.h \
- ../../Middlewares/ST/netxduo/common/inc/nx_udp.h \
- ../../Middlewares/ST/netxduo/common/inc/nx_ip.h \
- ../../Middlewares/ST/netxduo/common/inc/nx_ipv4.h
+ C:/Users/sebaw/OneDrive/Robotic\ arm/Software/H7/MainBoard/CM7/User_code/Inc/sntp_service.h
 ../NetXDuo/App/app_netxduo.h:
 ../../Middlewares/ST/netxduo/common/inc/nx_api.h:
 ../../Middlewares/ST/threadx/ports/cortex_m7/gnu/inc/tx_port.h:
@@ -65,6 +66,10 @@ NetXDuo/App/app_netxduo.o: ../NetXDuo/App/app_netxduo.c \
 ../../Middlewares/ST/netxduo/common/drivers/ethernet/nx_stm32_eth_driver.h:
 ../../Middlewares/ST/netxduo/common/inc/nx_link.h:
 ../../Middlewares/ST/netxduo/common/inc/nx_api.h:
+../../Middlewares/ST/netxduo/addons/dhcp/nxd_dhcp_client.h:
+../../Middlewares/ST/netxduo/common/inc/nx_udp.h:
+../../Middlewares/ST/netxduo/common/inc/nx_ip.h:
+../../Middlewares/ST/netxduo/common/inc/nx_ipv4.h:
 ../Core/Inc/main.h:
 ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 ../Core/Inc/stm32h7xx_hal_conf.h:
@@ -107,7 +112,4 @@ NetXDuo/App/app_netxduo.o: ../NetXDuo/App/app_netxduo.c \
 ../Core/Inc/stm32h7xx_nucleo_conf.h:
 ../../Drivers/BSP/STM32H7xx_Nucleo/stm32h7xx_nucleo_errno.h:
 C:/Users/sebaw/OneDrive/Robotic\ arm/Software/H7/MainBoard/Shared/Inc/helpers.h:
-../../Middlewares/ST/netxduo/addons/dhcp/nxd_dhcp_client.h:
-../../Middlewares/ST/netxduo/common/inc/nx_udp.h:
-../../Middlewares/ST/netxduo/common/inc/nx_ip.h:
-../../Middlewares/ST/netxduo/common/inc/nx_ipv4.h:
+C:/Users/sebaw/OneDrive/Robotic\ arm/Software/H7/MainBoard/CM7/User_code/Inc/sntp_service.h:

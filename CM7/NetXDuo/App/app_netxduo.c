@@ -27,9 +27,10 @@
 #include "app_netxduo.h"
 
 /* Private includes ----------------------------------------------------------*/
+#include "nxd_dhcp_client.h"
 /* USER CODE BEGIN Includes */
 #include "main.h"
-#include "nxd_dhcp_client.h"
+#include "sntp_service.h"
 
 /* USER CODE END Includes */
 
@@ -56,13 +57,15 @@
 TX_THREAD      NxAppThread;
 NX_PACKET_POOL NxAppPool;
 NX_IP          NetXDuoEthIpInstance;
-static NX_DHCP  dhcp_client;
+TX_SEMAPHORE   DHCPSemaphore;
+NX_DHCP        DHCPClient;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 static VOID nx_app_thread_entry (ULONG thread_input);
+static VOID ip_address_change_notify_callback(NX_IP *ip_instance, VOID *ptr);
 /* USER CODE BEGIN PFP */
 static inline void Printf_IP_Address(ULONG ip_address);
 /* USER CODE END PFP */
@@ -111,12 +114,12 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
   }
 
    /* Create the main NX_IP instance */
-  ret = nx_ip_create(&NetXDuoEthIpInstance, "NetX Ip instance", IP_ADDRESS(0, 0, 0, 0), IP_ADDRESS(0, 0, 0, 0), &NxAppPool, nx_stm32_eth_driver,
+  ret = nx_ip_create(&NetXDuoEthIpInstance, "NetX Ip instance", NX_APP_DEFAULT_IP_ADDRESS, NX_APP_DEFAULT_NET_MASK, &NxAppPool, nx_stm32_eth_driver,
                      pointer, Nx_IP_INSTANCE_THREAD_SIZE, NX_APP_INSTANCE_PRIORITY);
 
   if (ret != NX_SUCCESS)
   {
-    return ret;
+    return NX_NOT_SUCCESSFUL;
   }
 
     /* Allocate the memory for ARP */
@@ -164,7 +167,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
     return NX_NOT_SUCCESSFUL;
   }
 
-  /* Enable UDP for the application server socket. */
+  /* Enable the UDP protocol required for  DHCP communication */
 
   /* USER CODE BEGIN UDP_Protocol_Initialization */
 
@@ -177,7 +180,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
     return NX_NOT_SUCCESSFUL;
   }
 
-  /* Allocate the memory for main thread. */
+   /* Allocate the memory for main thread   */
   if (tx_byte_allocate(byte_pool, (VOID **) &pointer, NX_APP_THREAD_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
   {
     return TX_POOL_ERROR;
@@ -192,10 +195,43 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
     return TX_THREAD_ERROR;
   }
 
+  /* Create the DHCP client */
+
+  /* USER CODE BEGIN DHCP_Protocol_Initialization */
+
+  /* USER CODE END DHCP_Protocol_Initialization */
+
+  ret = nx_dhcp_create(&DHCPClient, &NetXDuoEthIpInstance, "DHCP Client");
+
+  if (ret != NX_SUCCESS)
+  {
+    return NX_DHCP_ERROR;
+  }
+
+  /* set DHCP notification callback  */
+  tx_semaphore_create(&DHCPSemaphore, "DHCP Semaphore", 0);
+
   /* USER CODE BEGIN MX_NetXDuo_Init */
   /* USER CODE END MX_NetXDuo_Init */
 
   return ret;
+}
+
+/**
+* @brief  ip address change callback.
+* @param ip_instance: NX_IP instance
+* @param ptr: user data
+* @retval none
+*/
+static VOID ip_address_change_notify_callback(NX_IP *ip_instance, VOID *ptr)
+{
+  /* USER CODE BEGIN ip_address_change_notify_callback */
+  NX_PARAMETER_NOT_USED(ip_instance);
+  NX_PARAMETER_NOT_USED(ptr);
+
+  /* Wake the app thread; it checks the current address after the notification. */
+  tx_semaphore_put(&DHCPSemaphore);
+  /* USER CODE END ip_address_change_notify_callback */
 }
 
 /**
@@ -209,43 +245,89 @@ static VOID nx_app_thread_entry (ULONG thread_input)
   /* USER CODE END Nx_App_Thread_Entry 0 */
 
   UINT ret = NX_SUCCESS;
+
+  /* USER CODE BEGIN Nx_App_Thread_Entry 1 */
+  /*
+   * CubeMX's generated semaphore wait below is unconditional. Seed the
+   * semaphore so the app can poll the IP address after DHCP is started,
+   * instead of depending on the address-change notification to wake it.
+   */
+  ret = tx_semaphore_put(&DHCPSemaphore);
+  if (ret != TX_SUCCESS)
+  {
+    printf("Could not release DHCP startup wait: %u\n", ret);
+    return;
+  }
+  /* USER CODE END Nx_App_Thread_Entry 1 */
+
+  /* register the IP address change callback */
+  ret = nx_ip_address_change_notify(&NetXDuoEthIpInstance, ip_address_change_notify_callback, NULL);
+  if (ret != NX_SUCCESS)
+  {
+    /* USER CODE BEGIN IP address change callback error */
+    printf("IP address callback registration failed: %u\n", ret);
+    return;
+    /* USER CODE END IP address change callback error */
+  }
+
+  /* start the DHCP client */
+  ret = nx_dhcp_start(&DHCPClient);
+  if (ret != NX_SUCCESS)
+  {
+    /* USER CODE BEGIN DHCP client start error */
+    printf("DHCP client start failed: %u\n", ret);
+    return;
+    /* USER CODE END DHCP client start error */
+  }
+  printf("Looking for DHCP server ..\n");
+  /* wait until an IP address is ready */
+  if(tx_semaphore_get(&DHCPSemaphore, TX_WAIT_FOREVER) != TX_SUCCESS)
+  {
+    /* USER CODE BEGIN DHCPSemaphore get error */
+    printf("Failed waiting for DHCP address notification\n");
+    return;
+    /* USER CODE END DHCPSemaphore get error */
+  }
+
   /* USER CODE BEGIN Nx_App_Thread_Entry 2 */
   NX_UDP_SOCKET udp_socket;
   ULONG ip_address;
   ULONG network_mask;
   NX_PACKET *packet;
   ULONG packet_length = 0U;
+  ULONG dhcp_wait_seconds = 0U;
 
-  printf("NetXDuo app started. Starting DHCP; waiting for a lease...\n");
-
-  ret = nx_dhcp_create(&dhcp_client, &NetXDuoEthIpInstance, "DHCP Client");
-  if (ret != NX_SUCCESS)
+  printf("Polling for DHCP address...\n");
+  for (;;)
   {
-    printf("DHCP client creation failed: %u\n", ret);
-    return;
-  }
-
-  ret = nx_dhcp_start(&dhcp_client);
-  if (ret != NX_SUCCESS)
-  {
-    printf("DHCP client start failed: %u\n", ret);
-    return;
-  }
-
-  do
-  {
-    tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
     ret = nx_ip_address_get(&NetXDuoEthIpInstance, &ip_address, &network_mask);
-  } while ((ret == NX_SUCCESS) && (ip_address == IP_ADDRESS(0, 0, 0, 0)));
+    if (ret != NX_SUCCESS)
+    {
+      printf("Could not read DHCP address: %u\n", ret);
+      return;
+    }
 
-  if (ret != NX_SUCCESS)
-  {
-    printf("Could not read DHCP address: %u\n", ret);
-    return;
+    if (ip_address != IP_ADDRESS(0, 0, 0, 0))
+    {
+      break;
+    }
+
+    tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
+    dhcp_wait_seconds++;
+    if ((dhcp_wait_seconds % 5U) == 0U)
+    {
+      printf("Still waiting for DHCP lease (%lu s)\n", dhcp_wait_seconds);
+    }
   }
 
   printf("DHCP address acquired: ");
   Printf_IP_Address(ip_address);
+
+  ret = UserCode_SNTP_Start(&NetXDuoEthIpInstance, &NxAppPool);
+  if (ret != NX_SUCCESS)
+  {
+    printf("SNTP startup failed; RTC will remain unsynchronized: %u\n", ret);
+  }
 
   ret = nx_udp_socket_create(&NetXDuoEthIpInstance,
                              &udp_socket,

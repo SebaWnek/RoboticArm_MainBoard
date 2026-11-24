@@ -774,6 +774,7 @@ NX_INTERFACE
     /* Check to make sure the link is up.  */
     if (nx_driver_information.nx_driver_information_state != NX_DRIVER_STATE_LINK_ENABLED)
     {
+
         /* Inidate an unsuccessful packet send.  */
         driver_req_ptr -> nx_ip_driver_status =  NX_DRIVER_ERROR;
 
@@ -841,6 +842,7 @@ NX_INTERFACE
     /* Determine if there was an error.  */
     if (status != NX_SUCCESS)
     {
+
         /* Driver's hardware send packet routine failed to send the packet.  */
 
         /* Remove the Ethernet header.  */
@@ -875,6 +877,7 @@ static VOID  _nx_driver_packet_send(NX_IP_DRIVER *driver_req_ptr)
   /* Check to make sure the link is up.  */
   if (nx_driver_information.nx_driver_information_state != NX_DRIVER_STATE_LINK_ENABLED)
   {
+
     /* Inidate an unsuccessful packet send.  */
     driver_req_ptr -> nx_ip_driver_status =  NX_DRIVER_ERROR;
 
@@ -963,6 +966,7 @@ static VOID  _nx_driver_packet_send(NX_IP_DRIVER *driver_req_ptr)
   /* Determine if there was an error.  */
   if (status != NX_SUCCESS)
   {
+
     /* Driver's hardware send packet routine failed to send the packet.  */
 
     /* Remove the Ethernet header.  */
@@ -1811,15 +1815,9 @@ static UINT  _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
 /**************************************************************************/
 static UINT  _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
 {
-  (void)driver_req_ptr;
-  HAL_StatusTypeDef hal_status;
 
   /* Call STM32 library to start Ethernet operation.  */
-  hal_status = HAL_ETH_Start_IT(&eth_handle);
-  if (hal_status != HAL_OK)
-  {
-    return(NX_DRIVER_ERROR);
-  }
+  HAL_ETH_Start_IT(&eth_handle);
 
   /* Return success!  */
   return(NX_SUCCESS);

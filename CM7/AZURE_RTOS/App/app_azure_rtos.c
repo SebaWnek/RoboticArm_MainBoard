@@ -26,7 +26,6 @@
 
 #include "app_azure_rtos.h"
 #include "stm32h7xx.h"
-#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

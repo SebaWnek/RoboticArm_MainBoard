@@ -33,10 +33,12 @@ Drivers/STM32H7xx_HAL_Driver \
 Middlewares/Interfaces/Network/Ethernet\ Interface \
 Middlewares/Interfaces/Network/Ethernet\ Phy\ Interface/LAN8742_Phy_Interface \
 Middlewares/NetXDuo/Network/NetXDuo/Addons\ DHCP\ Client \
+Middlewares/NetXDuo/Network/NetXDuo/Addons\ DNS \
 Middlewares/NetXDuo/Network/NetXDuo/Addons\ SNTP \
 Middlewares/NetXDuo/Network/NetXDuo/NX\ Core \
 Middlewares/ThreadX/RTOS/ThreadX/Core \
 Middlewares/ThreadX/RTOS/ThreadX/TraceX\ support \
 NetXDuo/App \
 Shared/Src \
+User_code/Src \
 

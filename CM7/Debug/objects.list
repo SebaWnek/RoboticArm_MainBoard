@@ -42,6 +42,7 @@
 "./Middlewares/Interfaces/Network/Ethernet Phy Interface/LAN8742_Phy_Interface/nx_stm32_phy_driver.o"
 "./Middlewares/NetXDuo/Network/NetXDuo/Addons DHCP Client/nxd_dhcp_client.o"
 "./Middlewares/NetXDuo/Network/NetXDuo/Addons DHCP Client/nxd_dhcpv6_client.o"
+"./Middlewares/NetXDuo/Network/NetXDuo/Addons DNS/nxd_dns.o"
 "./Middlewares/NetXDuo/Network/NetXDuo/Addons SNTP/nxd_sntp_client.o"
 "./Middlewares/NetXDuo/Network/NetXDuo/NX Core/nx_arp_announce_send.o"
 "./Middlewares/NetXDuo/Network/NetXDuo/NX Core/nx_arp_dynamic_entries_invalidate.o"
@@ -727,3 +728,4 @@
 "./Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_user_event_insert.o"
 "./NetXDuo/App/app_netxduo.o"
 "./Shared/Src/helpers.o"
+"./User_code/Src/sntp_service.o"

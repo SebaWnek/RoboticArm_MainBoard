@@ -1,3 +1,4 @@
-../NetXDuo/App/app_netxduo.c:75:6:MX_NetXDuo_Init	64	static
-../NetXDuo/App/app_netxduo.c:206:13:nx_app_thread_entry	176	static
-../NetXDuo/App/app_netxduo.c:338:20:Printf_IP_Address	24	static
+../NetXDuo/App/app_netxduo.c:78:6:MX_NetXDuo_Init	64	static
+../NetXDuo/App/app_netxduo.c:226:13:ip_address_change_notify_callback	16	static
+../NetXDuo/App/app_netxduo.c:242:13:nx_app_thread_entry	184	static
+../NetXDuo/App/app_netxduo.c:420:20:Printf_IP_Address	24	static

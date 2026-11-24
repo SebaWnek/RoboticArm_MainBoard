@@ -9,12 +9,14 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include User_code/Src/subdir.mk
 -include Shared/Src/subdir.mk
 -include NetXDuo/App/subdir.mk
 -include Middlewares/ThreadX/RTOS/ThreadX/TraceX\ support/subdir.mk
 -include Middlewares/ThreadX/RTOS/ThreadX/Core/subdir.mk
 -include Middlewares/NetXDuo/Network/NetXDuo/NX\ Core/subdir.mk
 -include Middlewares/NetXDuo/Network/NetXDuo/Addons\ SNTP/subdir.mk
+-include Middlewares/NetXDuo/Network/NetXDuo/Addons\ DNS/subdir.mk
 -include Middlewares/NetXDuo/Network/NetXDuo/Addons\ DHCP\ Client/subdir.mk
 -include Middlewares/Interfaces/Network/Ethernet\ Phy\ Interface/LAN8742_Phy_Interface/subdir.mk
 -include Middlewares/Interfaces/Network/Ethernet\ Interface/subdir.mk

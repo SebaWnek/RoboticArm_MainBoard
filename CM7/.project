@@ -210,6 +210,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/netxduo/addons/dhcp/nxd_dhcpv6_client.c</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/NetXDuo/Network/NetXDuo/Addons DNS/nxd_dns.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/netxduo/addons/dns/nxd_dns.c</locationURI>
+		</link>
+		<link>
 			<name>Middlewares/NetXDuo/Network/NetXDuo/Addons SNTP/nxd_sntp_client.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/netxduo/addons/sntp/nxd_sntp_client.c</locationURI>
